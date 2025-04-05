@@ -40,7 +40,8 @@ function App() {
         "Building your feed",
         "Connecting to GitHub",
         "Gathering your events",
-        "Loading repository data"
+        "Loading repository data",
+        "I promise it's almost over"
       ];
 
       let currentIndex = 0;
