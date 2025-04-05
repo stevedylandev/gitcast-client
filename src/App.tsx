@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Avatar } from './components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
 import { Badge } from './components/ui/badge'
-import { CalendarIcon, GitBranchIcon, GitCommitIcon, GitPullRequestIcon, StarIcon, TrashIcon, LoaderPinwheelIcon } from 'lucide-react'
+import { CalendarIcon, GitHubIcon, GitBranchIcon, GitCommitIcon, GitPullRequestIcon, StarIcon, TrashIcon, LoaderPinwheelIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import sdk, { Context } from '@farcaster/frame-sdk'
 import { FeedResponse } from './utils/types'
@@ -148,14 +148,39 @@ function App() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-3xl">
+    <div className="container mx-auto py-8 px-4 max-w-lg">
       <div className='mb-6 text-center'>
         <h1 className="text-4xl font-bold">GitCast</h1>
         <p className='text-muted-foreground'>Merging GitHub into Farcaster</p>
+        <div className="flex justify-center mt-4">
+          {context ? (
+            <Badge
+              onClick={() => sdk.actions.openUrl('https://github.com/stevedylandev/gitcast-client')}
+              className="flex items-center gap-1 text-xs"
+              variant="secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" className='h-6 w-6' viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.87 1.52 2.34 1.07 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.92c0-1.11.38-2 1.03-2.71c-.1-.25-.45-1.29.1-2.64c0 0 .84-.27 2.75 1.02c.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.35.2 2.39.1 2.64c.65.71 1.03 1.6 1.03 2.71c0 3.82-2.34 4.66-4.57 4.91c.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2" /></svg>
+              stevedylandev/gitcast-client
+            </Badge>
+          ) : (
+            <a
+              href="https://github.com/stevedylandev/gitcast-client"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Badge
+                onClick={() => sdk.actions.openUrl('https://github.com/stevedylandev/gitcast-client')}
+                className="flex items-center gap-1 text-xs"
+                variant="secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" className='h-6 w-6' viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.87 1.52 2.34 1.07 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.92c0-1.11.38-2 1.03-2.71c-.1-.25-.45-1.29.1-2.64c0 0 .84-.27 2.75 1.02c.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.35.2 2.39.1 2.64c.65.71 1.03 1.6 1.03 2.71c0 3.82-2.34 4.66-4.57 4.91c.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2" /></svg>
+                stevedylandev/gitcast-client
+              </Badge>
+            </a>
+          )}
+        </div>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-6">
         {feed?.events.map((event) => (
-          <Card key={event.id} className="shadow-sm hover:shadow-md transition-shadow max-w-full">
+          <Card key={event.id} className="shadow-sm py-2 px-1 hover:shadow-md transition-shadow max-w-full">
             <CardContent className="p-2">
               <div className="flex items-start gap-3">
                 {context ? (
@@ -210,7 +235,7 @@ function App() {
           </Card>
         ))}
       </div>
-    </div>
+    </div >
   )
 }
 
