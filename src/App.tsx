@@ -159,19 +159,19 @@ function App() {
               <div className="flex items-start gap-3">
                 {context ? (
                   <Avatar onClick={() => sdk.actions.openUrl(`https://warpcast.com/${event.farcaster.username}`)} className="h-10 w-10 rounded-full border-2 border-border">
-                    <img src={event.farcaster.pfp_url} alt={event.actor.login} />
+                    <img src={event.farcaster.pfp_url || event.actor.avatar_url} alt={event.actor.login} />
                   </Avatar>
                 ) : (
                   <a href={`https://warpcast.com/${event.farcaster.username}`} target='_blank' rel="noreferrer noopener" >
                     <Avatar className="h-10 w-10 rounded-full border-2 border-border">
-                      <img src={event.farcaster.pfp_url} alt={event.actor.login} />
+                      <img src={event.farcaster.pfp_url || event.actor.avatar_url} alt={event.actor.login} />
                     </Avatar>
                   </a>
 
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{event.farcaster.display_name}</span>
+                    <span className="font-semibold">{event.farcaster.display_name || event.actor.login}</span>
                     <Badge
                       variant={getBadgeVariant(event.type)}
                       className="flex items-center gap-1 text-xs"
