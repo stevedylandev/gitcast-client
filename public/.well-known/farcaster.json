@@ -1,0 +1,17 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjYwMjMsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg0NTYxMzExNjFmODNDN0Q3ZkRBMTViMzJhNWY3QzIxRkQ0RTI3RTk2In0",
+    "payload": "eyJkb21haW4iOiJnaXRjYXN0LmRldiJ9",
+    "signature": "MHhkMDNlMmM2NzVhZDBhNzBmYjI1ZGZhOWZjMTU4MjY3MjQyZTk3NmRjOGJkMTZlZGZjNmE2MDlhOTMxOWIxNzczNDgzMDY2NDA1NzBiYTNmMjEzNjUxZWFjZjE0NjAwNDk3ZTU2ODdiMDFkYTE5NjQzNTAxYzU3ZjQwNDRjZjNhNDFj"
+  },
+  "frame": {
+    "name": "GitCast",
+    "version": "1",
+    "iconUrl": "https://gitcast.dev/icon.png",
+    "homeUrl": "https://gitcast.dev",
+    "imageUrl": "https://gitcast.dev/frame.png",
+    "buttonTitle": "git fetch --all",
+    "splashImageUrl": "https://gitcast.dev/icon.png",
+    "splashBackgroundColor": "#000000"
+  }
+}

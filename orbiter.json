@@ -1,0 +1,6 @@
+{
+  "siteId": "2b78ae49-5b4e-4ee5-844c-40fc5abfad13",
+  "domain": "gitcast",
+  "buildCommand": "bun run build",
+  "buildDir": "dist"
+}
