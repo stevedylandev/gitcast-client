@@ -33,6 +33,7 @@ function App() {
   }, [])
 
 
+
   useEffect(() => {
     if (loading) {
       const phrases = [
@@ -64,7 +65,7 @@ function App() {
 
         const userFid = context?.user?.fid || 6023
 
-        const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/feed/${userFid}?limit=100`)
+        const response = await fetch(`https://api.gitcast.dev/feed/${userFid}?limit=100`)
         if (!response.ok) {
           throw new Error('Failed to fetch feed')
         }
