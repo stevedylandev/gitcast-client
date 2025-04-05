@@ -166,9 +166,15 @@ function App() {
                   </div>
 
                   <div className="text-sm text-muted-foreground mt-1 overflow-hidden text-ellipsis">
-                    <a onClick={() => sdk.actions.openUrl(event.repo.url)} href={event.repo.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                      {event.repo.name}
-                    </a>
+                    {context ? (
+                      <p onClick={() => sdk.actions.openUrl(event.repo.url)} className="hover:underline">
+                        {event.repo.name}
+                      </p>
+                    ) : (
+                      <a href={event.repo.url} target='_blank' rel="noopner noreferrer" className="hover:underline">
+                        {event.repo.name}
+                      </a>
+                    )}
                   </div>
 
                   {event.commitMessage && (
