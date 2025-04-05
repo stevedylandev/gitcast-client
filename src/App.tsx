@@ -118,7 +118,10 @@ function App() {
     return (
 
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <h1 className="text-4xl font-bold mb-24 text-center">GitCast</h1>
+        <div className='mb-24 text-center'>
+          <h1 className="text-4xl font-bold">GitCast</h1>
+          <p className='text-muted-foreground'>Merging GitHub into Farcaster</p>
+        </div>
 
         <LoaderPinwheelIcon className='animate-spin h-8 w-8' />
         <div className="animate-pulse">
@@ -145,18 +148,30 @@ function App() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-3xl">
-      <h1 className="text-4xl font-bold mb-6 text-center">GitCast</h1>
+      <div className='mb-6 text-center'>
+        <h1 className="text-4xl font-bold">GitCast</h1>
+        <p className='text-muted-foreground'>Merging GitHub into Farcaster</p>
+      </div>
       <div className="space-y-4">
         {feed?.events.map((event) => (
           <Card key={event.id} className="shadow-sm hover:shadow-md transition-shadow max-w-full">
             <CardContent className="p-2">
               <div className="flex items-start gap-3">
-                <Avatar className="h-10 w-10 rounded-full border-2 border-border">
-                  <img src={event.actor.avatar_url} alt={event.actor.login} />
-                </Avatar>
+                {context ? (
+                  <Avatar onClick={() => sdk.actions.openUrl(`https://warpcast.com/${event.farcaster.username}`)} className="h-10 w-10 rounded-full border-2 border-border">
+                    <img src={event.farcaster.pfp_url} alt={event.actor.login} />
+                  </Avatar>
+                ) : (
+                  <a href={`https://warpcast.com/${event.farcaster.username}`} target='_blank' rel="noreferrer noopener" >
+                    <Avatar className="h-10 w-10 rounded-full border-2 border-border">
+                      <img src={event.farcaster.pfp_url} alt={event.actor.login} />
+                    </Avatar>
+                  </a>
+
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{event.actor.login}</span>
+                    <span className="font-semibold">{event.farcaster.display_name}</span>
                     <Badge
                       variant={getBadgeVariant(event.type)}
                       className="flex items-center gap-1 text-xs"
