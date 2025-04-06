@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react'
 import { Avatar } from './components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
 import { Badge } from './components/ui/badge'
-import { CalendarIcon, GitBranchIcon, GitCommitIcon, GitPullRequestIcon, StarIcon, TrashIcon, LoaderPinwheelIcon } from 'lucide-react'
+import { CalendarIcon, GitBranchIcon, GitCommitIcon, GitPullRequestIcon, StarIcon, TrashIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import sdk, { Context } from '@farcaster/frame-sdk'
 import { FeedResponse } from './utils/types'
 import { Link } from './components/link'
+import { Loader } from './components/loader'
 
 const SERVER_URL = "https://api.gitcast.dev"
-
+//const SERVER_URL = "http://localhost:8787"
 
 function App() {
   const [feed, setFeed] = useState<FeedResponse | null>(null)
@@ -66,7 +67,7 @@ function App() {
       try {
         setLoading(true)
 
-        const userFid = context?.user?.fid || 6023
+        const userFid = context?.user?.fid || 4823
 
         const response = await fetch(`${SERVER_URL}/feed/${userFid}?limit=100`)
         if (!response.ok) {
@@ -127,10 +128,8 @@ function App() {
           <p className='text-muted-foreground'>Merging GitHub into Farcaster</p>
         </div>
 
-        <LoaderPinwheelIcon className='animate-spin h-8 w-8' />
-        <div className="animate-pulse">
-          <p className="text-lg font-medium text-white">{loadingPhrase}...</p>
-        </div>
+        <Loader />
+        <p className="text-lg font-medium text-white">{loadingPhrase}...</p>
       </div>
     )
   }
@@ -166,14 +165,14 @@ function App() {
           </Link>
         </div>
       </div>
-      <div className="space-y-6">
+      <div className="flex flex-col justify-start gap-6">
         {feed?.events.map((event) => (
           <Link href={event.eventUrl}>
             <Card key={event.id} className="shadow-sm py-2 px-1 hover:shadow-md transition-shadow max-w-full">
               <CardContent className="p-2">
                 <div className="flex items-start gap-3">
-                  <Link href={`https://warpcast.com/${event.farcaster.username}`}>
-                    <Avatar onClick={() => sdk.actions.openUrl(`https://warpcast.com/${event.farcaster.username}`)} className="h-10 w-10 rounded-full border-2 border-border">
+                  <Link href={`https://github.com/${event.actor.login}`}>
+                    <Avatar className="h-10 w-10 rounded-full border-2 border-border">
                       <img src={event.farcaster.pfp_url || event.actor.avatar_url} alt={event.actor.login} />
                     </Avatar>
                   </Link>
@@ -196,7 +195,7 @@ function App() {
                     </div>
                     {event.commitMessage && (
                       <p className="mt-2 text-sm bg-muted p-2 rounded-md border border-border overflow-hidden">
-                        <span className="line-clamp-3 break-words">{event.commitMessage}</span>
+                        <span className="line-clamp-3 break-words font-mono text-xs">{event.commitMessage}</span>
                       </p>
                     )}
 
