@@ -8,7 +8,7 @@ import sdk, { Context } from '@farcaster/frame-sdk'
 import { FeedResponse } from './utils/types'
 import { Link } from './components/link'
 
-const SERVER_URL = "http://localhost:8787"
+const SERVER_URL = "https://api.gitcast.dev"
 
 
 function App() {
