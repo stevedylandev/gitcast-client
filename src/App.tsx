@@ -101,21 +101,20 @@ function App() {
         return <GitCommitIcon className="h-4 w-4" />
     }
   }
-
-  const getBadgeVariant = (eventType: string): "success" | "default" | "destructive" | "secondary" | "outline" | "interest" | null | undefined => {
+  const getBadgeVariant = (eventType: string): "pushEvent" | "pullRequestEvent" | "watchEvent" | "deleteEvent" | "createEvent" | "default" | "secondary" | "outline" | null | undefined => {
     switch (eventType) {
       case 'PushEvent':
-        return 'default' // blue
+        return 'pushEvent'
       case 'PullRequestEvent':
-        return 'destructive' // red
+        return 'pullRequestEvent'
       case 'WatchEvent':
-        return 'interest' // gray
+        return 'watchEvent'
       case 'DeleteEvent':
-        return 'destructive' // red
+        return 'deleteEvent'
       case 'CreateEvent':
-        return 'success' // green
+        return 'createEvent'
       default:
-        return 'outline' // default outline
+        return 'outline'
     }
   }
 
