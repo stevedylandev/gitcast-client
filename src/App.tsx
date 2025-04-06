@@ -6,6 +6,9 @@ import { CalendarIcon, GitBranchIcon, GitCommitIcon, GitPullRequestIcon, StarIco
 import { formatDistanceToNow } from 'date-fns'
 import sdk, { Context } from '@farcaster/frame-sdk'
 import { FeedResponse } from './utils/types'
+import { Link } from './components/link'
+
+const SERVER_URL = "http://localhost:8787"
 
 
 function App() {
@@ -65,7 +68,7 @@ function App() {
 
         const userFid = context?.user?.fid || 6023
 
-        const response = await fetch(`https://api.gitcast.dev/feed/${userFid}?limit=100`)
+        const response = await fetch(`${SERVER_URL}/feed/${userFid}?limit=100`)
         if (!response.ok) {
           throw new Error('Failed to fetch feed')
         }
@@ -153,86 +156,59 @@ function App() {
         <h1 className="text-4xl font-bold">GitCast</h1>
         <p className='text-muted-foreground'>Merging GitHub into Farcaster</p>
         <div className="flex justify-center mt-4">
-          {context ? (
+          <Link href="https://github.com/stevedylandev/gitcast-client">
             <Badge
-              onClick={() => sdk.actions.openUrl('https://github.com/stevedylandev/gitcast-client')}
               className="flex items-center gap-1 text-xs"
               variant="secondary">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" className='h-6 w-6' viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.87 1.52 2.34 1.07 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.92c0-1.11.38-2 1.03-2.71c-.1-.25-.45-1.29.1-2.64c0 0 .84-.27 2.75 1.02c.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.35.2 2.39.1 2.64c.65.71 1.03 1.6 1.03 2.71c0 3.82-2.34 4.66-4.57 4.91c.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2" /></svg>
               stevedylandev/gitcast-client
             </Badge>
-          ) : (
-            <a
-              href="https://github.com/stevedylandev/gitcast-client"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Badge
-                onClick={() => sdk.actions.openUrl('https://github.com/stevedylandev/gitcast-client')}
-                className="flex items-center gap-1 text-xs"
-                variant="secondary">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" className='h-6 w-6' viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.87 1.52 2.34 1.07 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.92c0-1.11.38-2 1.03-2.71c-.1-.25-.45-1.29.1-2.64c0 0 .84-.27 2.75 1.02c.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.35.2 2.39.1 2.64c.65.71 1.03 1.6 1.03 2.71c0 3.82-2.34 4.66-4.57 4.91c.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2" /></svg>
-                stevedylandev/gitcast-client
-              </Badge>
-            </a>
-          )}
+          </Link>
         </div>
       </div>
       <div className="space-y-6">
         {feed?.events.map((event) => (
-          <Card key={event.id} className="shadow-sm py-2 px-1 hover:shadow-md transition-shadow max-w-full">
-            <CardContent className="p-2">
-              <div className="flex items-start gap-3">
-                {context ? (
-                  <Avatar onClick={() => sdk.actions.openUrl(`https://warpcast.com/${event.farcaster.username}`)} className="h-10 w-10 rounded-full border-2 border-border">
-                    <img src={event.farcaster.pfp_url || event.actor.avatar_url} alt={event.actor.login} />
-                  </Avatar>
-                ) : (
-                  <a href={`https://warpcast.com/${event.farcaster.username}`} target='_blank' rel="noreferrer noopener" >
-                    <Avatar className="h-10 w-10 rounded-full border-2 border-border">
+          <Link href={event.eventUrl}>
+            <Card key={event.id} className="shadow-sm py-2 px-1 hover:shadow-md transition-shadow max-w-full">
+              <CardContent className="p-2">
+                <div className="flex items-start gap-3">
+                  <Link href={`https://warpcast.com/${event.farcaster.username}`}>
+                    <Avatar onClick={() => sdk.actions.openUrl(`https://warpcast.com/${event.farcaster.username}`)} className="h-10 w-10 rounded-full border-2 border-border">
                       <img src={event.farcaster.pfp_url || event.actor.avatar_url} alt={event.actor.login} />
                     </Avatar>
-                  </a>
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{event.farcaster.display_name || event.actor.login}</span>
+                      <Badge
+                        variant={getBadgeVariant(event.type)}
+                        className="flex items-center gap-1 text-xs"
+                      >
+                        {getEventIcon(event.type)}
+                        {event.action}
+                      </Badge>
+                    </div>
 
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{event.farcaster.display_name || event.actor.login}</span>
-                    <Badge
-                      variant={getBadgeVariant(event.type)}
-                      className="flex items-center gap-1 text-xs"
-                    >
-                      {getEventIcon(event.type)}
-                      {event.action}
-                    </Badge>
-                  </div>
-
-                  <div className="text-sm text-muted-foreground mt-1 overflow-hidden text-ellipsis">
-                    {context ? (
-                      <p onClick={() => sdk.actions.openUrl(event.repo.url)} className="hover:underline">
+                    <div className="text-sm text-muted-foreground mt-1 overflow-hidden text-ellipsis">
+                      <p className="underline">
                         {event.repo.name}
                       </p>
-                    ) : (
-                      <a href={event.repo.url} target='_blank' rel="noopner noreferrer" className="hover:underline">
-                        {event.repo.name}
-                      </a>
+                    </div>
+                    {event.commitMessage && (
+                      <p className="mt-2 text-sm bg-muted p-2 rounded-md border border-border overflow-hidden">
+                        <span className="line-clamp-3 break-words">{event.commitMessage}</span>
+                      </p>
                     )}
-                  </div>
 
-                  {event.commitMessage && (
-                    <p className="mt-2 text-sm bg-muted p-2 rounded-md border border-border overflow-hidden">
-                      <span className="line-clamp-3 break-words">{event.commitMessage}</span>
-                    </p>
-                  )}
-
-                  <div className="flex items-center mt-2 text-xs text-muted-foreground">
-                    <CalendarIcon className="h-3 w-3 mr-1" />
-                    {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
+                    <div className="flex items-center mt-2 text-xs text-muted-foreground">
+                      <CalendarIcon className="h-3 w-3 mr-1" />
+                      {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div >

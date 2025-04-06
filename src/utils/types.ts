@@ -24,6 +24,7 @@ interface Event {
   action: string
   commitMessage: string | null
   farcaster: Farcaster
+  eventUrl: string
 }
 
 export interface FeedResponse {
