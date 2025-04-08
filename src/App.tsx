@@ -8,6 +8,7 @@ import sdk, { Context } from '@farcaster/frame-sdk'
 import { FeedResponse } from './utils/types'
 import { Link } from './components/link'
 import { Loader } from './components/loader'
+import { Toggle } from './components/ui/toggle'
 
 const SERVER_URL = "https://api.gitcast.dev"
 //const SERVER_URL = "http://localhost:8787"
@@ -19,6 +20,13 @@ function App() {
   const [loadingPhrase, setLoadingPhrase] = useState<string>("Finding your people");
   const [isSDKLoaded, setIsSDKLoaded] = useState(false)
   const [context, setContext] = useState<Context.FrameContext>()
+  const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({
+    PushEvent: false,
+    PullRequestEvent: false,
+    WatchEvent: false,
+    DeleteEvent: false,
+    CreateEvent: false,
+  })
 
   useEffect(() => {
     const loadSDK = async () => {
@@ -118,6 +126,21 @@ function App() {
     }
   }
 
+  const toggleFilter = (eventType: string) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [eventType]: !prev[eventType]
+    }))
+  }
+
+  // If no filters are active, show all events, otherwise show only events that match active filters
+  const filteredEvents = feed?.events.filter(event => {
+    if (Object.values(activeFilters).every(filter => !filter)) {
+      return true; // Show all events when no filters are active
+    }
+    return activeFilters[event.type]; // Only show events that match active filters
+  }) || []
+
   if (loading) {
     return (
 
@@ -164,8 +187,52 @@ function App() {
           </Link>
         </div>
       </div>
+
+      <div className="flex flex-wrap justify-center gap-0 mb-6">
+        <Toggle
+          pressed={activeFilters.PushEvent}
+          onPressedChange={() => toggleFilter('PushEvent')}
+        >
+          <Badge variant={activeFilters.PushEvent ? 'pushEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+            <GitCommitIcon className="h-3 w-3" /> Commits
+          </Badge>
+        </Toggle>
+        <Toggle
+          pressed={activeFilters.PullRequestEvent}
+          onPressedChange={() => toggleFilter('PullRequestEvent')}
+        >
+          <Badge variant={activeFilters.PullRequestEvent ? 'pullRequestEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+            <GitPullRequestIcon className="h-3 w-3" /> PRs
+          </Badge>
+        </Toggle>
+        <Toggle
+          pressed={activeFilters.WatchEvent}
+          onPressedChange={() => toggleFilter('WatchEvent')}
+        >
+          <Badge variant={activeFilters.WatchEvent ? 'watchEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+            <StarIcon className="h-3 w-3" /> Stars
+          </Badge>
+        </Toggle>
+        <Toggle
+          pressed={activeFilters.CreateEvent}
+          onPressedChange={() => toggleFilter('CreateEvent')}
+        >
+          <Badge variant={activeFilters.CreateEvent ? 'createEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+            <GitBranchIcon className="h-3 w-3" /> Branches
+          </Badge>
+        </Toggle>
+        {/* <Toggle
+          pressed={activeFilters.DeleteEvent}
+          onPressedChange={() => toggleFilter('DeleteEvent')}
+        >
+          <Badge variant={activeFilters.DeleteEvent ? 'deleteEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+            <TrashIcon className="h-3 w-3" /> Deletions
+          </Badge>
+        </Toggle> */}
+      </div>
+
       <div className="flex flex-col justify-start gap-6">
-        {feed?.events.map((event) => (
+        {filteredEvents.map((event) => (
           <Link href={event.eventUrl}>
             <Card key={event.id} className="shadow-sm py-2 px-1 hover:shadow-md transition-shadow max-w-full">
               <CardContent className="p-2">
