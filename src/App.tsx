@@ -20,6 +20,7 @@ function App() {
   const [loadingPhrase, setLoadingPhrase] = useState<string>("Finding your people");
   const [isSDKLoaded, setIsSDKLoaded] = useState(false)
   const [context, setContext] = useState<Context.FrameContext>()
+  const [initializing, setInitializing] = useState(false)
   const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({
     PushEvent: false,
     PullRequestEvent: false,
@@ -75,42 +76,29 @@ function App() {
       try {
         setLoading(true)
 
-        const userFid = context?.user?.fid || 4823
+        const userFid = context?.user?.fid || 120
 
         const response = await fetch(`${SERVER_URL}/feed/${userFid}?limit=100`)
         if (!response.ok) {
           throw new Error('Failed to fetch feed')
         }
-        let data = await response.json()
+        const data = await response.json()
         if (data.events.length === 0) {
           // Initialize the feed
+          setInitializing(true)
           await fetch(`${SERVER_URL}/init/${userFid}`, {
             method: "POST"
           })
 
-          // Poll the status endpoint until we have enough events
-          let status = { stats: { events: 0 } }
-          const pollInterval = 2000 // 2 seconds
-          const maxPolls = 15 // Maximum polling attempts
-          let pollCount = 0
-
-          while (status.stats.events < 20 && pollCount < maxPolls) {
-            await new Promise(resolve => setTimeout(resolve, pollInterval))
-            const statusReq = await fetch(`${SERVER_URL}/status/${userFid}`)
-            status = await statusReq.json()
-            pollCount++
-            setLoadingPhrase(`Gathering events (${status.stats.events}/10)...`)
-          }
-
-          // Re-fetch the feed after initialization and polling
-          const refreshResponse = await fetch(`${SERVER_URL}/feed/${userFid}?limit=100`)
-          if (refreshResponse.ok) {
-            data = await refreshResponse.json()
-          }
+          setFeed({ events: [] })
+          setLoading(false)
+          return
         }
         setFeed(data)
+        setInitializing(false)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
+        setInitializing(false)
       } finally {
         setLoading(false)
       }
@@ -169,7 +157,6 @@ function App() {
 
   if (loading) {
     return (
-
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
         <div className='mb-24 text-center'>
           <h1 className="text-4xl font-bold">GitCast</h1>
@@ -178,6 +165,27 @@ function App() {
 
         <Loader />
         <p className="text-lg font-medium text-white">{loadingPhrase}...</p>
+      </div>
+    )
+  }
+
+  if (initializing || (feed && feed.events.length === 0)) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className='mb-24 text-center'>
+          <h1 className="text-4xl font-bold">GitCast</h1>
+          <p className='text-muted-foreground'>Merging GitHub into Farcaster</p>
+        </div>
+
+        <Card className="max-w-sm">
+          <CardHeader className="text-center">
+            <CardTitle>Indexing Your Data</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="mb-4">We're currently indexing your GitHub data. This process takes a minute to complete.</p>
+            <p className="font-medium">Please come back in a minute to see your feed!</p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
