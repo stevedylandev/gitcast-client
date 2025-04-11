@@ -76,7 +76,7 @@ function App() {
       try {
         setLoading(true)
 
-        const userFid = context?.user?.fid || 120
+        const userFid = context?.user?.fid || 6023
 
         const response = await fetch(`${SERVER_URL}/feed/${userFid}?limit=100`)
         if (!response.ok) {
@@ -90,7 +90,7 @@ function App() {
             method: "POST"
           })
 
-          setFeed({ events: [] })
+          setFeed(null)
           setLoading(false)
           return
         }
@@ -179,6 +179,7 @@ function App() {
 
         <Card className="max-w-sm">
           <CardHeader className="text-center">
+            <GitBranchIcon className="h-12 w-12 mb-3 text-center mx-auto" />
             <CardTitle>Indexing Your Data</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
