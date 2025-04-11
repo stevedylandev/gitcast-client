@@ -81,7 +81,33 @@ function App() {
         if (!response.ok) {
           throw new Error('Failed to fetch feed')
         }
-        const data = await response.json()
+        let data = await response.json()
+        if (data.events.length === 0) {
+          // Initialize the feed
+          await fetch(`${SERVER_URL}/init/${userFid}`, {
+            method: "POST"
+          })
+
+          // Poll the status endpoint until we have enough events
+          let status = { stats: { events: 0 } }
+          const pollInterval = 2000 // 2 seconds
+          const maxPolls = 15 // Maximum polling attempts
+          let pollCount = 0
+
+          while (status.stats.events < 20 && pollCount < maxPolls) {
+            await new Promise(resolve => setTimeout(resolve, pollInterval))
+            const statusReq = await fetch(`${SERVER_URL}/status/${userFid}`)
+            status = await statusReq.json()
+            pollCount++
+            setLoadingPhrase(`Gathering events (${status.stats.events}/10)...`)
+          }
+
+          // Re-fetch the feed after initialization and polling
+          const refreshResponse = await fetch(`${SERVER_URL}/feed/${userFid}?limit=100`)
+          if (refreshResponse.ok) {
+            data = await refreshResponse.json()
+          }
+        }
         setFeed(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
