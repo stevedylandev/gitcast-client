@@ -10,7 +10,7 @@ import { Link } from './components/link'
 import { Loader } from './components/loader'
 import { Toggle } from './components/ui/toggle'
 
-const SERVER_URL = "https://api.gitcast.dev"
+const SERVER_URL = "https://gitcast-api-worker.stevedsimkins.workers.dev"
 //const SERVER_URL = "http://localhost:8787"
 
 function App() {
