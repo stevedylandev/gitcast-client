@@ -32,3 +32,23 @@ export interface FeedResponse {
   fromCache: boolean
   cacheAge: number
 }
+
+export interface Repository {
+  id: string
+  name: string
+  full_name: string
+  description: string | null
+  url: string
+  html_url: string
+  stars_count: number
+  forks_count: number
+  last_updated: number
+  farcaster_stars_count: number
+}
+
+export interface RepositoriesResponse {
+  repositories: Repository[]
+  page: number
+  limit: number
+  hasMore: boolean
+}

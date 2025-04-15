@@ -1,23 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Avatar } from './components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
 import { Badge } from './components/ui/badge'
-import { CalendarIcon, GitBranchIcon, GitCommitIcon, GitPullRequestIcon, StarIcon, TrashIcon } from 'lucide-react'
+import { CalendarIcon, GitBranchIcon, GitCommitIcon, GitPullRequestIcon, StarIcon, TrashIcon, UserIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import sdk, { Context } from '@farcaster/frame-sdk'
-import { FeedResponse } from './utils/types'
+import { FeedResponse, Repository } from './utils/types'
 import { Link } from './components/link'
 import { Loader } from './components/loader'
 import { Toggle } from './components/ui/toggle'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
 
-const SERVER_URL = "https://gitcast-api-worker.stevedsimkins.workers.dev"
+const SERVER_URL = "https://api.gitcast.dev"
 //const SERVER_URL = "http://localhost:8787"
 
 function App() {
   const [feed, setFeed] = useState<FeedResponse | null>(null)
+  const [repositories, setRepositories] = useState<Repository[]>([])
   const [loading, setLoading] = useState(true)
+  const [reposLoading, setReposLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [loadingPhrase, setLoadingPhrase] = useState<string>("Finding your people");
+  const [loadingPhrase, setLoadingPhrase] = useState<string>("Finding your people")
   const [isSDKLoaded, setIsSDKLoaded] = useState(false)
   const [context, setContext] = useState<Context.FrameContext>()
   const [initializing, setInitializing] = useState(false)
@@ -28,6 +31,7 @@ function App() {
     DeleteEvent: false,
     CreateEvent: false,
   })
+  const [activeRepoFilter, setActiveRepoFilter] = useState<'stars' | 'farcaster' | null>(null);
 
   useEffect(() => {
     const loadSDK = async () => {
@@ -44,8 +48,6 @@ function App() {
 
     loadSDK()
   }, [])
-
-
 
   useEffect(() => {
     if (loading) {
@@ -67,7 +69,6 @@ function App() {
       return () => clearInterval(interval);
     }
   }, [loading]);
-
 
   useEffect(() => {
     if (!isSDKLoaded) return
@@ -107,6 +108,28 @@ function App() {
     fetchFeed()
   }, [isSDKLoaded, context])
 
+  useEffect(() => {
+    const fetchRepositories = async () => {
+      try {
+        setReposLoading(true)
+        const response = await fetch(`${SERVER_URL}/top-repos`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch repositories')
+        }
+        const data = await response.json()
+        setRepositories(data.repositories)
+      } catch (err) {
+        console.error("Error fetching repositories:", err)
+      } finally {
+        setReposLoading(false)
+      }
+    }
+
+    if (isSDKLoaded) {
+      fetchRepositories()
+    }
+  }, [isSDKLoaded])
+
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
       case 'PushEvent':
@@ -139,6 +162,20 @@ function App() {
         return 'outline'
     }
   }
+
+  const sortedRepositories = useMemo(() => {
+    if (!repositories || repositories.length === 0) return [];
+
+    const repos = [...repositories];
+
+    if (activeRepoFilter === 'stars') {
+      return repos.sort((a, b) => b.stars_count - a.stars_count);
+    } else if (activeRepoFilter === 'farcaster') {
+      return repos.sort((a, b) => b.farcaster_stars_count - a.farcaster_stars_count);
+    }
+
+    return repos; // Default sorting (whatever comes from the API)
+  }, [repositories, activeRepoFilter]);
 
   const toggleFilter = (eventType: string) => {
     setActiveFilters(prev => ({
@@ -223,95 +260,158 @@ function App() {
         </div>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-0 mb-6">
-        <Toggle
-          pressed={activeFilters.PushEvent}
-          onPressedChange={() => toggleFilter('PushEvent')}
-        >
-          <Badge variant={activeFilters.PushEvent ? 'pushEvent' : 'outline'} className="flex items-center gap-1 text-xs">
-            <GitCommitIcon className="h-3 w-3" /> Commits
-          </Badge>
-        </Toggle>
-        <Toggle
-          pressed={activeFilters.PullRequestEvent}
-          onPressedChange={() => toggleFilter('PullRequestEvent')}
-        >
-          <Badge variant={activeFilters.PullRequestEvent ? 'pullRequestEvent' : 'outline'} className="flex items-center gap-1 text-xs">
-            <GitPullRequestIcon className="h-3 w-3" /> PRs
-          </Badge>
-        </Toggle>
-        <Toggle
-          pressed={activeFilters.WatchEvent}
-          onPressedChange={() => toggleFilter('WatchEvent')}
-        >
-          <Badge variant={activeFilters.WatchEvent ? 'watchEvent' : 'outline'} className="flex items-center gap-1 text-xs">
-            <StarIcon className="h-3 w-3" /> Stars
-          </Badge>
-        </Toggle>
-        <Toggle
-          pressed={activeFilters.CreateEvent}
-          onPressedChange={() => toggleFilter('CreateEvent')}
-        >
-          <Badge variant={activeFilters.CreateEvent ? 'createEvent' : 'outline'} className="flex items-center gap-1 text-xs">
-            <GitBranchIcon className="h-3 w-3" /> Branches
-          </Badge>
-        </Toggle>
-        {/* <Toggle
-          pressed={activeFilters.DeleteEvent}
-          onPressedChange={() => toggleFilter('DeleteEvent')}
-        >
-          <Badge variant={activeFilters.DeleteEvent ? 'deleteEvent' : 'outline'} className="flex items-center gap-1 text-xs">
-            <TrashIcon className="h-3 w-3" /> Deletions
-          </Badge>
-        </Toggle> */}
-      </div>
+      <Tabs defaultValue="feed" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="feed">Feed</TabsTrigger>
+          <TabsTrigger value="repos">Top Repositories</TabsTrigger>
+        </TabsList>
 
-      <div className="flex flex-col justify-start gap-6">
-        {filteredEvents.map((event) => (
-          <Link href={event.eventUrl}>
-            <Card key={event.id} className="shadow-sm py-2 px-1 hover:shadow-md transition-shadow max-w-full">
-              <CardContent className="p-2">
-                <div className="flex items-start gap-3">
-                  <Link href={`https://github.com/${event.actor.login}`}>
-                    <Avatar className="h-10 w-10 rounded-full border-2 border-border">
-                      <img src={event.farcaster.pfp_url || event.actor.avatar_url} alt={event.actor.login} />
-                    </Avatar>
-                  </Link>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{event.farcaster.display_name || event.actor.login}</span>
-                      <Badge
-                        variant={getBadgeVariant(event.type)}
-                        className="flex items-center gap-1 text-xs"
-                      >
-                        {getEventIcon(event.type)}
-                        {event.action}
-                      </Badge>
-                    </div>
+        <TabsContent value="feed">
+          <div className="flex flex-wrap justify-center gap-0 mb-6">
+            <Toggle
+              pressed={activeFilters.PushEvent}
+              onPressedChange={() => toggleFilter('PushEvent')}
+            >
+              <Badge variant={activeFilters.PushEvent ? 'pushEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+                <GitCommitIcon className="h-3 w-3" /> Commits
+              </Badge>
+            </Toggle>
+            <Toggle
+              pressed={activeFilters.PullRequestEvent}
+              onPressedChange={() => toggleFilter('PullRequestEvent')}
+            >
+              <Badge variant={activeFilters.PullRequestEvent ? 'pullRequestEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+                <GitPullRequestIcon className="h-3 w-3" /> PRs
+              </Badge>
+            </Toggle>
+            <Toggle
+              pressed={activeFilters.WatchEvent}
+              onPressedChange={() => toggleFilter('WatchEvent')}
+            >
+              <Badge variant={activeFilters.WatchEvent ? 'watchEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+                <StarIcon className="h-3 w-3" /> Stars
+              </Badge>
+            </Toggle>
+            <Toggle
+              pressed={activeFilters.CreateEvent}
+              onPressedChange={() => toggleFilter('CreateEvent')}
+            >
+              <Badge variant={activeFilters.CreateEvent ? 'createEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+                <GitBranchIcon className="h-3 w-3" /> Branches
+              </Badge>
+            </Toggle>
+          </div>
 
-                    <div className="text-sm text-muted-foreground mt-1 overflow-hidden text-ellipsis">
-                      <p className="underline">
-                        {event.repo.name}
-                      </p>
-                    </div>
-                    {event.commitMessage && (
-                      <p className="mt-2 text-sm bg-muted p-2 rounded-md border border-border overflow-hidden">
-                        <span className="line-clamp-3 break-words font-mono text-xs">{event.commitMessage}</span>
-                      </p>
-                    )}
+          <div className="flex flex-col justify-start gap-6">
+            {filteredEvents.map((event) => (
+              <Link href={event.eventUrl} key={event.id}>
+                <Card className="shadow-sm py-2 px-1 hover:shadow-md transition-shadow max-w-full">
+                  <CardContent className="p-2">
+                    <div className="flex items-start gap-3">
+                      <Link href={`https://github.com/${event.actor.login}`}>
+                        <Avatar className="h-10 w-10 rounded-full border-2 border-border">
+                          <img src={event.farcaster.pfp_url || event.actor.avatar_url} alt={event.actor.login} />
+                        </Avatar>
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">{event.farcaster.display_name || event.actor.login}</span>
+                          <Badge
+                            variant={getBadgeVariant(event.type)}
+                            className="flex items-center gap-1 text-xs"
+                          >
+                            {getEventIcon(event.type)}
+                            {event.action}
+                          </Badge>
+                        </div>
 
-                    <div className="flex items-center mt-2 text-xs text-muted-foreground">
-                      <CalendarIcon className="h-3 w-3 mr-1" />
-                      {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
+                        <div className="text-sm text-muted-foreground mt-1 overflow-hidden text-ellipsis">
+                          <p className="underline">
+                            {event.repo.name}
+                          </p>
+                        </div>
+                        {event.commitMessage && (
+                          <p className="mt-2 text-sm bg-muted p-2 rounded-md border border-border overflow-hidden">
+                            <span className="line-clamp-3 break-words font-mono text-xs">{event.commitMessage}</span>
+                          </p>
+                        )}
+
+                        <div className="flex items-center mt-2 text-xs text-muted-foreground">
+                          <CalendarIcon className="h-3 w-3 mr-1" />
+                          {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
-    </div >
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="repos">
+          <div className="flex flex-wrap justify-center gap-0 mb-6">
+            <Toggle
+              pressed={activeRepoFilter === 'stars'}
+              onPressedChange={() => setActiveRepoFilter('stars')}
+            >
+              <Badge variant={activeRepoFilter === 'stars' ? 'watchEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+                <StarIcon className="h-3 w-3" /> Most Stars
+              </Badge>
+            </Toggle>
+            <Toggle
+              pressed={activeRepoFilter === 'farcaster'}
+              onPressedChange={() => setActiveRepoFilter('farcaster')}
+            >
+              <Badge variant={activeRepoFilter === 'farcaster' ? 'pullRequestEvent' : 'outline'} className="flex items-center gap-1 text-xs">
+                <UserIcon className="h-3 w-3" /> Most Farcaster Users
+              </Badge>
+            </Toggle>
+          </div>
+
+
+          {reposLoading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader />
+              <p className="mt-4 text-lg">Loading repositories...</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {sortedRepositories.map((repo) => (
+                <Link href={repo.html_url} key={repo.id}>
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{repo.name}</h3>
+                          <p className="text-sm text-muted-foreground">{repo.full_name}</p>
+                          <p className="mt-2 text-sm line-clamp-2">{repo.description || "No description"}</p>
+                          <div className="flex items-center gap-4 mt-3">
+                            <div className="flex items-center gap-1">
+                              <StarIcon className="h-4 w-4 text-yellow-400" />
+                              <span className="text-sm">{repo.stars_count.toLocaleString()}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <GitBranchIcon className="h-4 w-4" />
+                              <span className="text-sm">{repo.forks_count.toLocaleString()}</span>
+                            </div>
+                            {repo.farcaster_stars_count > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {repo.farcaster_stars_count} Farcaster {repo.farcaster_stars_count === 1 ? 'user' : 'users'}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }
 
