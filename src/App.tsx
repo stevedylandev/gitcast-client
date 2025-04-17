@@ -20,7 +20,6 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [reposLoading, setReposLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [loadingPhrase, setLoadingPhrase] = useState<string>("Finding your people")
   const [isSDKLoaded, setIsSDKLoaded] = useState(false)
   const [context, setContext] = useState<Context.FrameContext>()
   const [initializing, setInitializing] = useState(false)
@@ -48,27 +47,6 @@ function App() {
 
     loadSDK()
   }, [])
-
-  useEffect(() => {
-    if (loading) {
-      const phrases = [
-        "Finding your people",
-        "Building your feed",
-        "Connecting to GitHub",
-        "Gathering your events",
-        "Loading repository data",
-        "I promise it's almost over"
-      ];
-
-      let currentIndex = 0;
-      const interval = setInterval(() => {
-        currentIndex = (currentIndex + 1) % phrases.length;
-        setLoadingPhrase(phrases[currentIndex]);
-      }, 3000);
-
-      return () => clearInterval(interval);
-    }
-  }, [loading]);
 
   useEffect(() => {
     if (!isSDKLoaded) return
@@ -201,7 +179,6 @@ function App() {
         </div>
 
         <Loader />
-        <p className="text-lg font-medium text-white">{loadingPhrase}...</p>
       </div>
     )
   }
