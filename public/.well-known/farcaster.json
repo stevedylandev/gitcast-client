@@ -12,6 +12,20 @@
     "imageUrl": "https://gitcast.dev/frame.png",
     "buttonTitle": "git fetch --all",
     "splashImageUrl": "https://gitcast.dev/icon.png",
-    "splashBackgroundColor": "#000000"
+    "splashBackgroundColor": "#000000",
+    "subtitle": "Merging GitHub into Farcaster",
+    "description": "Explore what your Farcaster social graph is building through GitHub!",
+    "primaryCategory": "developer-tools",
+    "tags": [
+      "developers",
+      "github",
+      "social",
+      "programming"
+    ],
+    "heroImageUrl": "https://gitcast.dev/og.png",
+    "tagline": "Merging GitHub into Farcaster",
+    "ogTitle": "GitCast",
+    "ogDescription": "Merging GitHub into Farcaster",
+    "ogImageUrl": "https://gitcast.dev/og.png"
   }
 }
