@@ -15,6 +15,10 @@
     "splashBackgroundColor": "#000000",
     "subtitle": "Merging GitHub into Farcaster",
     "description": "Explore what your Farcaster social graph is building through GitHub!",
+    "screenshotUrls": [
+      "https://gitcast.dev/screenshot1.png",
+      "https://gitcast.dev/screenshot2.png"
+    ],
     "primaryCategory": "developer-tools",
     "tags": [
       "developers",
